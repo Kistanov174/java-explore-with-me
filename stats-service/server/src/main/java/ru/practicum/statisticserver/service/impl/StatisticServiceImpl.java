@@ -5,15 +5,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import ru.practicum.statdto.EndpointHitDto;
-import ru.practicum.statdto.ViewStatsDto;
 import ru.practicum.statdto.ViewStats;
+import ru.practicum.statdto.ViewStatsDto;
+import ru.practicum.statisticserver.model.EndpointHit;
+import ru.practicum.statisticserver.repository.StatisticRepository;
+import ru.practicum.statisticserver.service.StatisticService;
+
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import ru.practicum.statisticserver.model.EndpointHit;
-import ru.practicum.statisticserver.repository.StatisticRepository;
-import ru.practicum.statisticserver.service.StatisticService;
 
 @Slf4j
 @Service
@@ -25,7 +26,7 @@ public class StatisticServiceImpl implements StatisticService {
     public EndpointHitDto addStatisticData(EndpointHitDto endpointHitDto) {
         EndpointHit endpointHit = modelMapper.map(endpointHitDto, EndpointHit.class);
         EndpointHitDto savingEndpointHit = modelMapper.map(statisticRepository.save(endpointHit), EndpointHitDto.class);
-        log.info("Created new line in statistic data " + savingEndpointHit.toString());
+        log.info("Created new line in statistic data = {}", savingEndpointHit.toString());
         return savingEndpointHit;
     }
 
@@ -45,9 +46,9 @@ public class StatisticServiceImpl implements StatisticService {
                 statisticData = statisticRepository.findStatisticNotUnique(start, end, uris);
             }
         }
-        log.info("Received statistic data by uri: " + Arrays.toString(uris));
+        log.info("Received statistic data by uri = {}",  Arrays.toString(uris));
         return statisticData.stream()
-                .map(data -> new ViewStatsDto(data.getApp(), data.getUri(), data.getHits()))
+                .map(data -> modelMapper.map(data, ViewStatsDto.class))
                 .collect(Collectors.toList());
     }
 }

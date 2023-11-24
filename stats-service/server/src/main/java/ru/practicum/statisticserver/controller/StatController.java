@@ -30,7 +30,7 @@ public class StatController {
 
     @PostMapping("/hit")
     public ResponseEntity<EndpointHitDto> saveStatistic(@RequestBody @Valid EndpointHitDto endpointHit) {
-        log.info("Created request to save information about calling of the endpoint " + endpointHit.getUri());
+        log.info("Created request to save information about calling of the endpoint = {}", endpointHit.getUri());
         endpointHit.setCreated(LocalDateTime.now());
         return ResponseEntity.status(HttpStatus.CREATED).body(statisticService.addStatisticData(endpointHit));
     }
