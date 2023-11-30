@@ -28,7 +28,7 @@ public class RequestController {
     @PostMapping
     ResponseEntity<Object> addRequest(@Positive @PathVariable("userId") Long userId,
                                       @RequestParam(required = false) Long eventId) {
-        if (eventId == null) {
+        if (eventId == null || eventId == 0) {
             throw new ValidationException("Не передан обязательный query parameter");
         }
         log.info("Получен запрос POST на создание запроса на участие в событии {}", eventId);

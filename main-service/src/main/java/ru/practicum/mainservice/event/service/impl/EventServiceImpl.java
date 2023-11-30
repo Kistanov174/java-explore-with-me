@@ -67,7 +67,7 @@ public class EventServiceImpl implements EventService {
                     newEventDto.getEventDate().toString() + ") не может быть раньше," +
                     " чем через два часа от текущего момента");
         }
-        Event event = mapper.mapToEventFromEventAmminDto(newEventDto);
+        Event event = mapper.mapToEventFromEventAdminDto(newEventDto);
         event.setInitiator(getUser(userId));
         event.setCategory(getCategory(newEventDto.getCategory()));
         event.setState(State.PENDING);
@@ -110,7 +110,7 @@ public class EventServiceImpl implements EventService {
         validationUpdateEventByInitiator(userId, event, updateEvent);
         Provider<Event> eventProvider = p -> event;
         mapper.getPropertyUpdEventUserReq().setProvider(eventProvider);
-        Event actualEvent = mapper.mapToEventFromEventAmminDto(updateEvent);
+        Event actualEvent = mapper.mapToEventFromEventAdminDto(updateEvent);
         if (updateEvent.getStateAction() != null) {
             if (updateEvent.getStateAction().equals(StateAction.CANCEL_REVIEW)) {
                 actualEvent.setState(State.CANCELED);
@@ -156,7 +156,7 @@ public class EventServiceImpl implements EventService {
         Event event = getEvent(eventId);
         Provider<Event> eventProvider = p -> event;
         mapper.getPropertyUpdEventAdminReq().setProvider(eventProvider);
-        Event actualEvent = mapper.mapToEventFromEventAmminDto(updEventReq);
+        Event actualEvent = mapper.mapToEventFromEventAdminDto(updEventReq);
 
         if (updEventReq.getStateAction() != null) {
             validationUpdateEventByAdmin(event, updEventReq.getStateAction());
