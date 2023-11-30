@@ -31,23 +31,23 @@ public class EventMapper {
         propertyUpdEventAdminReq.addMappings(m -> m.map(EventAdminDto::getCategory, Event::setCategory));
     }
 
-    public Event mapToEvent(NewEventDto newEvent) {
+    public Event mapToEventFromEventAmminDto(NewEventDto newEvent) {
         return modelMapper.map(newEvent, Event.class);
     }
 
-    public EventFullDto mapToEventFullDto(Event event) {
+    public EventFullDto mapToEventFullDtoFromEvent(Event event) {
         return modelMapper.map(event, EventFullDto.class);
     }
 
-    public EventShortDto mapToEventShortDto(Event event) {
+    public EventShortDto mapToEventShortDtoFromEvent(Event event) {
         return modelMapper.map(event, EventShortDto.class);
     }
 
-    public Event mapToEvent(EventUserDto updatedEvent) {
+    public Event mapToEventFromEventAmminDto(EventUserDto updatedEvent) {
         return modelMapper.map(updatedEvent, Event.class);
     }
 
-    public Event mapToEvent(EventAdminDto updatedEvent) {
+    public Event mapToEventFromEventAmminDto(EventAdminDto updatedEvent) {
         return modelMapper.map(updatedEvent, Event.class);
     }
 }

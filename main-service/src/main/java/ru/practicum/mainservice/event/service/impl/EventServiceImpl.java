@@ -67,7 +67,7 @@ public class EventServiceImpl implements EventService {
                     newEventDto.getEventDate().toString() + ") не может быть раньше," +
                     " чем через два часа от текущего момента");
         }
-        Event event = mapper.mapToEvent(newEventDto);
+        Event event = mapper.mapToEventFromEventAmminDto(newEventDto);
         event.setInitiator(getUser(userId));
         event.setCategory(getCategory(newEventDto.getCategory()));
         event.setState(State.PENDING);
@@ -76,7 +76,7 @@ public class EventServiceImpl implements EventService {
         if (newEventDto.getRequestModeration() == null) {
             event.setRequestModeration(true);
         }
-        EventFullDto eventFullDto = mapper.mapToEventFullDto(eventRepository.save(event));
+        EventFullDto eventFullDto = mapper.mapToEventFullDtoFromEvent(eventRepository.save(event));
         log.info("Добавлено новое событие {}", eventFullDto);
         return eventFullDto;
     }
@@ -86,7 +86,7 @@ public class EventServiceImpl implements EventService {
         getUser(userId);
         List<EventShortDto> events = eventRepository.findEventsByInitiator_Id(userId, page)
                 .stream()
-                .map(mapper::mapToEventShortDto)
+                .map(mapper::mapToEventShortDtoFromEvent)
                 .collect(Collectors.toList());
         log.info("Список событий добавленных пользователем {}: {}", userId, events);
         return events;
@@ -99,7 +99,7 @@ public class EventServiceImpl implements EventService {
         if (!event.getInitiator().getId().equals(userId)) {
             throw new DataNotFoundException("Event with id = " + eventId + " was not found");
         }
-        EventFullDto eventFullDto = mapper.mapToEventFullDto(event);
+        EventFullDto eventFullDto = mapper.mapToEventFullDtoFromEvent(event);
         log.info("Пользователем {} запрошенно событие {}", userId, eventFullDto);
         return eventFullDto;
     }
@@ -110,7 +110,7 @@ public class EventServiceImpl implements EventService {
         validationUpdateEventByInitiator(userId, event, updateEvent);
         Provider<Event> eventProvider = p -> event;
         mapper.getPropertyUpdEventUserReq().setProvider(eventProvider);
-        Event actualEvent = mapper.mapToEvent(updateEvent);
+        Event actualEvent = mapper.mapToEventFromEventAmminDto(updateEvent);
         if (updateEvent.getStateAction() != null) {
             if (updateEvent.getStateAction().equals(StateAction.CANCEL_REVIEW)) {
                 actualEvent.setState(State.CANCELED);
@@ -118,7 +118,7 @@ public class EventServiceImpl implements EventService {
                 actualEvent.setState(State.PENDING);
             }
         }
-        EventFullDto eventFullDto = mapper.mapToEventFullDto(eventRepository.save(actualEvent));
+        EventFullDto eventFullDto = mapper.mapToEventFullDtoFromEvent(eventRepository.save(actualEvent));
         log.info("Пользователем {} обновлено событие {}", userId, eventFullDto);
         return eventFullDto;
     }
@@ -156,7 +156,7 @@ public class EventServiceImpl implements EventService {
         Event event = getEvent(eventId);
         Provider<Event> eventProvider = p -> event;
         mapper.getPropertyUpdEventAdminReq().setProvider(eventProvider);
-        Event actualEvent = mapper.mapToEvent(updEventReq);
+        Event actualEvent = mapper.mapToEventFromEventAmminDto(updEventReq);
 
         if (updEventReq.getStateAction() != null) {
             validationUpdateEventByAdmin(event, updEventReq.getStateAction());
@@ -169,7 +169,7 @@ public class EventServiceImpl implements EventService {
                 actualEvent.setAvailable(false);
             }
         }
-        EventFullDto eventFullDto = mapper.mapToEventFullDto(eventRepository.save(actualEvent));
+        EventFullDto eventFullDto = mapper.mapToEventFullDtoFromEvent(eventRepository.save(actualEvent));
         log.info("Администратором обновлено событие {}", eventFullDto);
         return eventFullDto;
     }
@@ -183,7 +183,7 @@ public class EventServiceImpl implements EventService {
         List<EventFullDto> events = eventRepository.findAll(Objects.requireNonNull(predicate), pageable).getContent()
                 .stream()
                 .map(this::getEventWithStat)
-                .map(mapper::mapToEventFullDto)
+                .map(mapper::mapToEventFullDtoFromEvent)
                 .collect(Collectors.toList());
         log.info("Администратором получен список событий {}", events);
         return events;
@@ -206,7 +206,7 @@ public class EventServiceImpl implements EventService {
         List<EventFullDto> events = eventRepository.findAll(Objects.requireNonNull(predicate), pageable).getContent()
                 .stream()
                 .map(this::getEventWithStat)
-                .map(mapper::mapToEventFullDto)
+                .map(mapper::mapToEventFullDtoFromEvent)
                 .collect(Collectors.toList());
         log.info("По публичному эндпоинту получен список событий {}", events);
         return events;
@@ -220,7 +220,7 @@ public class EventServiceImpl implements EventService {
         }
         statsClient.addHit(request);
         Event actualEvent = getEventWithStat(event);
-        EventFullDto eventFullDto = mapper.mapToEventFullDto(eventRepository.save(actualEvent));
+        EventFullDto eventFullDto = mapper.mapToEventFullDtoFromEvent(eventRepository.save(actualEvent));
         log.info("Запрошенно событие {}", eventFullDto);
         return eventFullDto;
     }
