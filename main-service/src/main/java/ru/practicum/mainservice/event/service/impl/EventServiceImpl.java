@@ -84,7 +84,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<EventShortDto> findAllUserEvents(Long userId, PageRequest page) {
         getUser(userId);
-        List<EventShortDto> events = eventRepository.findEventsByInitiator_Id(userId, page)
+        List<EventShortDto> events = eventRepository.findEventsByInitiatorId(userId, page)
                 .stream()
                 .map(mapper::mapToEventShortDtoFromEvent)
                 .collect(Collectors.toList());
