@@ -12,8 +12,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import ru.practicum.mainservice.exception.ValidationException;
 import ru.practicum.mainservice.request.service.RequestService;
-import javax.validation.ValidationException;
+
 import javax.validation.constraints.Positive;
 
 @Slf4j
@@ -26,7 +27,7 @@ public class RequestController {
 
     @PostMapping
     ResponseEntity<Object> addRequest(@Positive @PathVariable("userId") Long userId,
-                                      @RequestParam Long eventId) {
+                                      @RequestParam(required = false) Long eventId) {
         if (eventId == null) {
             throw new ValidationException("Не передан обязательный query parameter");
         }

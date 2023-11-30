@@ -32,7 +32,7 @@ public class Handler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    ApiException handleNotValidException(final ValidationException e) {
+    ApiException handleValidationException(final ValidationException e) {
         log.debug("Получен статус 400 Bad Request {}", e.getMessage());
 
         return new ApiException(
