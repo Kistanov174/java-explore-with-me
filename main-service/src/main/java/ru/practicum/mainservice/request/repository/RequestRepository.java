@@ -5,9 +5,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import ru.practicum.mainservice.request.model.Request;
 
 public interface RequestRepository extends JpaRepository<Request, Long> {
-    Object findByRequesterIdAndEventId(Long requesterId, Long eventId);
+    Object findByRequester_IdAndEvent_Id(Long requesterId, Long eventId);
 
-    List<Request> findAllByRequesterId(Long requesterId);
+    List<Request> findAllByRequester_Id(Long requesterId);
 
-    List<Request> findAllByUserIdAndEventId(Long userId, Long eventId);
+    List<Request> findAllByEvent_Initiator_IdAndEvent_Id(Long initiatorId, Long eventId);
 }

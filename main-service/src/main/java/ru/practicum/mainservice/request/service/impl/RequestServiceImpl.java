@@ -34,7 +34,7 @@ public class RequestServiceImpl implements RequestService {
     public RequestDto addRequest(Long userId, Long eventId) {
         User user = getUser(userId);
         Event event = getEvent(eventId);
-        if (requestRepository.findByRequesterIdAndEventId(userId, eventId) != null ||
+        if (requestRepository.findByRequester_IdAndEvent_Id(userId, eventId) != null ||
                 userId.equals(event.getInitiator().getId()) ||
                 !event.getState().equals(State.PUBLISHED) ||
                 (event.getParticipantLimit() != 0 && event.getParticipantLimit() - event.getConfirmedRequests() == 0)
@@ -67,7 +67,7 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public List<RequestDto> findAllByRequesterId(Long userId) {
         getUser(userId);
-        List<RequestDto> requests = requestRepository.findAllByRequesterId(userId).stream()
+        List<RequestDto> requests = requestRepository.findAllByRequester_Id(userId).stream()
                 .map(modelMapper::toDto)
                 .collect(Collectors.toList());
         log.info("Все запросы пользователя {} на участие в событии {}", userId, requests);

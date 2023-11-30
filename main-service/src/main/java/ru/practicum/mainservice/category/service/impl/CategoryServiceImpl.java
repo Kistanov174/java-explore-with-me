@@ -57,7 +57,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public boolean deleteCategory(Long catId) {
-        if (!eventRepository.findAllByCategoryId(catId).isEmpty()) {
+        if (!eventRepository.findAllByCategory_Id(catId).isEmpty()) {
             throw new ConflictException("The category is not empty");
         }
         categoryRepository.delete(getCategory(catId));
