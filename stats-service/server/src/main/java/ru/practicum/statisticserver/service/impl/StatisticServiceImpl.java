@@ -23,6 +23,7 @@ public class StatisticServiceImpl implements StatisticService {
     private StatisticRepository statisticRepository;
     private ModelMapper modelMapper;
 
+    @Override
     public EndpointHitDto addStatisticData(EndpointHitDto endpointHitDto) {
         EndpointHit endpointHit = modelMapper.map(endpointHitDto, EndpointHit.class);
         EndpointHitDto savingEndpointHit = modelMapper.map(statisticRepository.save(endpointHit), EndpointHitDto.class);
@@ -30,6 +31,7 @@ public class StatisticServiceImpl implements StatisticService {
         return savingEndpointHit;
     }
 
+    @Override
     public List<ViewStatsDto> getStatisticData(LocalDateTime start, LocalDateTime end,
                                             String[] uris, boolean isUnique) {
         List<ViewStats> statisticData;

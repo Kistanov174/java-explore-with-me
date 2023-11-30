@@ -1,0 +1,3 @@
+
+ewm-service:
+  url=${STAT_SERVER_URL:http://localhost:9090}
