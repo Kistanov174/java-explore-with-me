@@ -57,7 +57,7 @@ public class EventServiceImpl implements EventService {
     private final RequestRepository partReqRepository;
     private final EventMapper mapper;
     private final RequestMapper partReqMapper;
-    private final StatClient statsClient = new StatClient("http://stat-server:9090", new RestTemplateBuilder());
+    private final StatClient statsClient = new StatClient("http://stats-server:9090", new RestTemplateBuilder());
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
@@ -84,7 +84,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<EventShortDto> findAllUserEvents(Long userId, PageRequest page) {
         getUser(userId);
-        List<EventShortDto> events = eventRepository.findEventsByInitiatorId(userId, page)
+        List<EventShortDto> events = eventRepository.findEventsByInitiator_Id(userId, page)
                 .stream()
                 .map(mapper::mapToEventShortDtoFromEvent)
                 .collect(Collectors.toList());
