@@ -1,6 +1,5 @@
 server:
   port: 8080
-  url: http://localhost:9090
 
 spring:
   output:
