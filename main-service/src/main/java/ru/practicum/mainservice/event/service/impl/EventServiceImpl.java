@@ -47,7 +47,7 @@ public class EventServiceImpl implements EventService {
     private final EventMapper eventMapper;
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
-    private final StatClient client = new StatClient("http://stat-server:9090", new RestTemplateBuilder());
+    private final StatClient client = new StatClient("http://stats-server:9090", new RestTemplateBuilder());
 
     @Override
     @Transactional
