@@ -1,5 +1,6 @@
 package ru.practicum.mainservice.event.service.impl;
 
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.mainservice.event.dto.AdminUpdateEventDto;
@@ -46,7 +47,7 @@ public class EventServiceImpl implements EventService {
     private final EventMapper eventMapper;
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
-    private final StatClient client;
+    private final StatClient client = new StatClient("http://stat-server:9090", new RestTemplateBuilder());
 
     @Override
     @Transactional
