@@ -3,6 +3,7 @@ package ru.practicum.mainservice.category.dto;
 import lombok.Getter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.NoArgsConstructor;
 import ru.practicum.mainservice.config.Create;
 import ru.practicum.mainservice.config.Update;
 import javax.validation.constraints.NotBlank;
@@ -11,6 +12,7 @@ import javax.validation.constraints.NotNull;
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor
+@NoArgsConstructor
 public class CategoryDto {
     @NotNull(groups = {Update.class})
     private Long id;

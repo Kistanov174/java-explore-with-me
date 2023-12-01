@@ -40,7 +40,7 @@ public class UserController {
     }
 
     @PostMapping
-    public UserDto create(@Validated({Create.class})
+    public UserDto create(@Validated(Create.class)
                           @RequestBody UserDto userDto) {
         log.info("POST request: создание пользователя id={}", userDto.toString());
         return userConverter.convertToDto(userService.create(userDto));

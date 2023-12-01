@@ -3,6 +3,7 @@ package ru.practicum.mainservice.user.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import ru.practicum.mainservice.config.Create;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -10,6 +11,7 @@ import javax.validation.constraints.NotBlank;
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor
+@NoArgsConstructor
 public class UserDto {
     private Long id;
 
