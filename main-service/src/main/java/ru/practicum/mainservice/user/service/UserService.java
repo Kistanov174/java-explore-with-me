@@ -1,17 +1,14 @@
 package ru.practicum.mainservice.user.service;
 
-import org.hibernate.exception.ConstraintViolationException;
-import org.springframework.data.domain.PageRequest;
-import ru.practicum.mainservice.user.dto.NewUserDto;
 import ru.practicum.mainservice.user.dto.UserDto;
-
-
-import java.util.List;
+import org.springframework.data.domain.Pageable;
+import ru.practicum.mainservice.user.model.User;
+import java.util.Collection;
 
 public interface UserService {
-    UserDto addUser(NewUserDto newUserDto) throws ConstraintViolationException;
+    User create(UserDto userDto);
 
-    boolean deleteUser(Long id);
+    void delete(long userId);
 
-    List<UserDto> findUsers(List<Long> ids, PageRequest pageRequest);
+    Collection<User> getUsers(Long[] ids, Pageable pageable);
 }

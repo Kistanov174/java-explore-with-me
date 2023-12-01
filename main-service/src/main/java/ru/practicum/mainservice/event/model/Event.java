@@ -1,9 +1,10 @@
 package ru.practicum.mainservice.event.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.NoArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.AccessLevel;
+import lombok.ToString;
 import lombok.AllArgsConstructor;
 import ru.practicum.mainservice.category.model.Category;
 import ru.practicum.mainservice.user.model.User;
@@ -15,78 +16,90 @@ import javax.persistence.Column;
 import javax.persistence.GenerationType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.Size;
 import javax.persistence.Enumerated;
 import javax.persistence.EnumType;
-import javax.persistence.AttributeOverride;
-import javax.persistence.Embedded;
-import javax.persistence.AttributeOverrides;
+import org.hibernate.Hibernate;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
-@Entity
 @Getter
 @Setter
-@NoArgsConstructor
+@ToString
 @AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED, force = true)
+@Entity
 @Table(name = "events")
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "event_id", updatable = false, nullable = false, unique = true)
+    @Column(name = "event_id")
     private Long id;
 
-    @Column(name = "annotation", nullable = false)
+    @Size(min = 20, max = 2000)
+    @Column(name = "annotation")
     private String annotation;
 
     @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
+    @JoinColumn(name = "category_id")
     private Category category;
 
     @Column(name = "confirmed_requests")
-    private Long confirmedRequests;
+    private Integer confirmedRequests;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Column(name = "create_date", nullable = false)
+    @Column(name = "created_on")
     private LocalDateTime createdOn;
 
-    @Column(name = "description", nullable = false)
+    @Size(min = 20, max = 2000)
+    @Column(name = "description")
     private String description;
 
-    @Column(name = "event_date", nullable = false)
+    @Column(name = "event_date")
     private LocalDateTime eventDate;
 
     @ManyToOne
     @JoinColumn(name = "initiator_id")
     private User initiator;
 
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "lat", column = @Column(name = "lat")),
-            @AttributeOverride(name = "lon", column = @Column(name = "lon"))
-    })
-    private Location location;
+    @Column(name = "lon")
+    private double lon;
 
-    @Column(name = "paid", nullable = false)
+    @Column(name = "lat")
+    private double lat;
+
+    @Column(name = "paid")
     private boolean paid;
 
-    @Column(name = "participant_limit")
-    private int participantLimit;
+    @JoinColumn(name = "participant_limit")
+    private Integer participantLimit;
 
-    @Column(name = "available")
-    private boolean available;
-
-    @Column(name = "published_on", nullable = false)
+    @Column(name = "published_on")
     private LocalDateTime publishedOn;
 
-    @Column(name = "request_moderation", nullable = false)
+    @Column(name = "request_moderation")
     private boolean requestModeration;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "state", nullable = false)
+    @Column(name = "state")
     private State state;
 
-    @Column(name = "title", nullable = false)
+    @Size(min = 3, max = 120)
+    @Column(name = "title")
     private String title;
 
-    @Column(name = "event_views", nullable = false)
+    @Column(name = "views")
     private Long views;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        Event event = (Event) o;
+        return id != null && Objects.equals(id, event.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

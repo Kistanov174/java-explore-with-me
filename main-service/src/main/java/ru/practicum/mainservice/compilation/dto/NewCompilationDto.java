@@ -1,19 +1,21 @@
 package ru.practicum.mainservice.compilation.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.hibernate.validator.constraints.Length;
-import javax.validation.constraints.NotBlank;
-import java.util.List;
+import ru.practicum.mainservice.config.Create;
+import javax.validation.constraints.NotNull;
+import java.util.Set;
 
-@Data
-@NoArgsConstructor
+@Getter
 @AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED, force = true)
 public class NewCompilationDto {
-    private List<Long> events;
-    private Boolean pinned;
-    @NotBlank
-    @Length(min = 1, max = 50)
+    private Set<Long> events;
+
+    @NotNull(message = "Поле title не должно быть пустым", groups = {Create.class})
     private String title;
+
+    private Boolean pinned;
 }

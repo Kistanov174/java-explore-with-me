@@ -1,16 +1,17 @@
 package ru.practicum.mainservice.event.model;
 
 import lombok.Getter;
-import lombok.Setter;
+import lombok.EqualsAndHashCode;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import javax.persistence.Embeddable;
+import lombok.NoArgsConstructor;
+import lombok.AccessLevel;
+import lombok.Builder;
 
 @Getter
-@Setter
+@EqualsAndHashCode
+@Builder(toBuilder = true)
 @AllArgsConstructor
-@RequiredArgsConstructor
-@Embeddable
+@NoArgsConstructor(access = AccessLevel.PROTECTED, force = true)
 public class Location {
     private Float lat;
     private Float lon;

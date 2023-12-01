@@ -1,41 +1,34 @@
 package ru.practicum.mainservice.event.service;
 
-import org.springframework.data.domain.PageRequest;
-import ru.practicum.mainservice.event.dto.EventFullDto;
+import org.springframework.data.domain.Pageable;
+import ru.practicum.mainservice.event.dto.SearchParameters;
 import ru.practicum.mainservice.event.dto.NewEventDto;
-import ru.practicum.mainservice.event.dto.EventShortDto;
-import ru.practicum.mainservice.event.dto.EventUserDto;
-import ru.practicum.mainservice.event.dto.EventAdminDto;
-import ru.practicum.mainservice.event.model.State;
-import ru.practicum.mainservice.request.dto.EventRequestStatusUpdateRequest;
-import ru.practicum.mainservice.request.dto.EventRequestStatusUpdateResult;
-import ru.practicum.mainservice.request.dto.RequestDto;
+import ru.practicum.mainservice.event.dto.UpdateEventRequest;
+import ru.practicum.mainservice.event.dto.AdminUpdateEventDto;
+import ru.practicum.mainservice.event.model.Event;
 import javax.servlet.http.HttpServletRequest;
-import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Collection;
 
 public interface EventService {
-    EventFullDto addEvent(Long userId, NewEventDto newEventDto);
+    Collection<Event> search(SearchParameters searchParameters);
 
-    List<EventShortDto> findAllUserEvents(Long userId, PageRequest pageRequest);
+    Collection<Event> getAllAdmin(SearchParameters searchParameters);
 
-    EventFullDto findUserEvent(Long userId, Long eventId);
+    Collection<Event> getAllByOwner(Long userId, Pageable pageable);
 
-    EventFullDto updateEventByUser(Long userId, Long eventId, EventUserDto updateEvent);
+    Event getById(Long eventId, HttpServletRequest request);
 
-    List<RequestDto> getInfoAboutRequests(Long userId, Long eventId);
+    Event getByOwner(Long userId, Long eventId);
 
-    EventRequestStatusUpdateResult updateRequestStatus(Long userId, Long eventId,
-                                                       EventRequestStatusUpdateRequest updateRequest);
+    Event create(NewEventDto newEventDto, Long userId);
 
-    EventFullDto updateEventByAdmin(Long eventId, EventAdminDto updEventReq);
+    Event update(long userId, UpdateEventRequest eventRequest);
 
-    List<EventFullDto> getEventsForAdmin(List<Long> users, List<State> states, List<Long> categories,
-                                         LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size);
+    Event updateAdmin(AdminUpdateEventDto eventDto, Long eventId);
 
-    List<EventFullDto> getEventsForPublic(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart,
-                                          LocalDateTime rangeEnd, Boolean onlyAvailable, String sort, int from,
-                                          int size, HttpServletRequest request);
+    Event cancel(Long userId, Long eventId);
 
-    EventFullDto findEventById(Long id, HttpServletRequest request);
+    Event publish(Long eventId);
+
+    Event reject(Long eventId);
 }

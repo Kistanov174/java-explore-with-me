@@ -1,12 +1,18 @@
 package ru.practicum.mainservice.request.service;
 
-import ru.practicum.mainservice.request.dto.RequestDto;
-import java.util.List;
+import ru.practicum.mainservice.request.model.Request;
+import java.util.Collection;
 
 public interface RequestService {
-    RequestDto addRequest(Long userId, Long eventId);
+    Collection<Request> getAll(Long userId);
 
-    List<RequestDto> findAllByRequesterId(Long userId);
+    Request create(Long userId, Long eventId);
 
-    RequestDto changeStatusToCancelled(Long userId, Long requestId);
+    Request cancel(Long userId, Long requestId);
+
+    Collection<Request> getRequestsByEventOwner(Long userId, Long eventId);
+
+    Request confirmByEventOwner(Long userId, Long eventId, Long requestId);
+
+    Request rejectByEventOwner(Long userId, Long eventId, Long requestId);
 }

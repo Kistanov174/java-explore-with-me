@@ -1,42 +1,49 @@
 package ru.practicum.mainservice.event.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.Data;
+import lombok.Getter;
+import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import ru.practicum.mainservice.config.Create;
 import ru.practicum.mainservice.event.model.Location;
+import ru.practicum.mainservice.validation.EventCreationDate;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.Future;
 import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
+import static ru.practicum.mainservice.config.Constant.DATE_FORMAT;
 
-@Data
-@NoArgsConstructor
+@Getter
 @AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED, force = true)
 public class NewEventDto {
-    @NotBlank
-    @Size(max = 2000, min = 20)
+    @Size(min = 20, max = 2000, groups = {Create.class})
+    @NotNull(message = "Поле annotation не должно быть пустым", groups = {Create.class})
     private String annotation;
-    @NotNull
-    @Positive
+
+    @NotNull(message = "Поле categoryId не должно быть пустым", groups = {Create.class})
     private Long category;
-    @NotBlank
-    @Size(max = 7000, min = 20)
+
+    @Size(min = 20, max = 7000, groups = {Create.class})
+    @NotNull(message = "Поле description не должно быть пустым", groups = {Create.class})
     private String description;
-    @NotNull
-    @Future
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+
+    @EventCreationDate(groups = {Create.class})
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_FORMAT)
     private LocalDateTime eventDate;
-    @NotNull
+
+    @NotNull(message = "Поле location не должно быть пустым", groups = {Create.class})
     private Location location;
+
     private Boolean paid;
+
     @PositiveOrZero
     private Integer participantLimit;
+
     private Boolean requestModeration;
-    @NotBlank
-    @Size(max = 120, min = 3)
+
+    @Size(min = 3, max = 120, groups = {Create.class})
+    @NotNull(message = "Поле title не должно быть пустым", groups = {Create.class})
     private String title;
 }

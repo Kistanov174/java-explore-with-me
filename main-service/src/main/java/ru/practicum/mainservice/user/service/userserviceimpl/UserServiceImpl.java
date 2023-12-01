@@ -1,71 +1,42 @@
 package ru.practicum.mainservice.user.service.userserviceimpl;
 
-import ru.practicum.mainservice.exception.ConflictException;
-import ru.practicum.mainservice.exception.DataNotFoundException;
-import ru.practicum.mainservice.user.dto.NewUserDto;
+import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.mainservice.user.dto.UserDto;
+import ru.practicum.mainservice.user.mapper.UserMapper;
 import ru.practicum.mainservice.user.model.User;
 import ru.practicum.mainservice.user.repository.UserRepository;
 import ru.practicum.mainservice.user.service.UserService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.Collection;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
-    private final ModelMapper modelMapper;
+    private final UserMapper userMapper;
 
     @Override
-    public UserDto addUser(NewUserDto newUser) {
-        if (checkIsUniqueEmail(newUser.getEmail())) {
-            throw new ConflictException("could not execute statement; SQL [n/a];" +
-                    " constraint [uq_email];" +
-                    " nested exception is org.hibernate.exception.ConstraintViolationException:" +
-                    " could not execute statement");
+    @Transactional
+    public User create(UserDto userDto) {
+        User user = userMapper.convert(userDto);
+        return userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void delete(long userId) {
+        userRepository.deleteById(userId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Collection<User> getUsers(Long[] ids, Pageable pageable) {
+        if (ids == null) {
+            return userRepository.findAll(pageable).toList();
         }
-        User user = userRepository.save(modelMapper.map(newUser, User.class));
-        log.info("Добавлен новый пользователь {}", user);
-        return modelMapper.map(user, UserDto.class);
-    }
-
-    @Override
-    public boolean deleteUser(Long id) {
-        userRepository.delete(getUserById(id));
-        log.info("Пользователь с id = {} удален", id);
-        return true;
-    }
-
-    @Override
-    public List<UserDto> findUsers(List<Long> ids, PageRequest page) {
-        List<UserDto> usersDto;
-        if (ids != null && !ids.isEmpty()) {
-            usersDto = userRepository.findAllById(ids)
-                    .stream()
-                    .map(user -> modelMapper.map(user, UserDto.class))
-                    .collect(Collectors.toList());
-        } else {
-            usersDto = userRepository.findAll(page)
-                    .stream()
-                    .map(user -> modelMapper.map(user, UserDto.class))
-                    .collect(Collectors.toList());
-        }
-        log.info("Запрошен список всех пользователей, результат: {}", usersDto);
-        return usersDto;
-    }
-
-    private User getUserById(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new DataNotFoundException("User with id = " + id + " was not found"));
-    }
-
-    private boolean checkIsUniqueEmail(String email) {
-        return userRepository.findUserByEmail(email) != null;
+        return userRepository.findAllByIdIn(Arrays.asList(ids), pageable).toList();
     }
 }

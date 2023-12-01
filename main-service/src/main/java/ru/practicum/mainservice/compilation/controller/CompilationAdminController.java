@@ -2,8 +2,6 @@ package ru.practicum.mainservice.compilation.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,36 +10,56 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import ru.practicum.mainservice.compilation.dto.CompilationDto;
 import ru.practicum.mainservice.compilation.dto.NewCompilationDto;
-import ru.practicum.mainservice.compilation.dto.UpdateCompilationRequest;
+import ru.practicum.mainservice.compilation.mapper.CompilationMapper;
 import ru.practicum.mainservice.compilation.service.CompilationService;
-import javax.validation.Valid;
-import javax.validation.constraints.Positive;
+import ru.practicum.mainservice.config.Create;
 
 @Slf4j
-@Validated
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/admin/compilations")
 public class CompilationAdminController {
+    private final CompilationMapper compilationMapper;
     private final CompilationService compilationService;
 
     @PostMapping
-    ResponseEntity<Object> addCompilation(@Valid @RequestBody NewCompilationDto newCompilationDto) {
-        log.info("Получен запрос POST на создание подборки событий {}", newCompilationDto.toString());
-        return new ResponseEntity<>(compilationService.addCompilation(newCompilationDto), HttpStatus.CREATED);
+    public CompilationDto create(@Validated({Create.class})
+                                 @RequestBody NewCompilationDto compilationDto) {
+        log.info("POST request: создание подборки событий {}", compilationDto);
+        return compilationMapper.convertToDto(compilationService.create(compilationDto));
     }
 
-    @PatchMapping("/{compId}")
-    ResponseEntity<Object> updateCompilation(@Positive @PathVariable("compId") Long compId,
-                                             @Valid @RequestBody UpdateCompilationRequest updCompReq) {
-        log.info("Получен запрос PATCH на обновление подборки событий {}", updCompReq.toString());
-        return new ResponseEntity<>(compilationService.updateCompilation(compId, updCompReq), HttpStatus.OK);
+    @PatchMapping("/{compId}/events/{eventId}")
+    public void addEvent(@PathVariable Long compId,
+                         @PathVariable Long eventId) {
+        log.info("PATCH request: добавление в подборку {} события {}", compId, eventId);
+        compilationService.addEvent(compId, eventId);
+    }
+
+    @PatchMapping("/{compId}/pin")
+    public void pinCompilation(@PathVariable Long compId) {
+        log.info("PATCH request: закрепление подборки id={}", compId);
+        compilationService.pinCompilation(compId);
+    }
+
+    @DeleteMapping("/{compId}/pin")
+    public void unpinCompilation(@PathVariable Long compId) {
+        log.info("DELETE request: открепление подборки id={}", compId);
+        compilationService.unpinCompilation(compId);
     }
 
     @DeleteMapping("/{compId}")
-    ResponseEntity<Object> deleteCompilation(@Positive @PathVariable("compId") Long compId) {
-        log.info("Получен запрос DELETE для подборки событий по id {}", compId);
-        return new ResponseEntity<>(compilationService.deleteCompilation(compId), HttpStatus.NO_CONTENT);
+    public void delete(@PathVariable Long compId) {
+        log.info("DELETE request: удалаение подборки id={}", compId);
+        compilationService.delete(compId);
+    }
+
+    @DeleteMapping("/{compId}/events/{eventId}")
+    public void deleteEvent(@PathVariable Long compId,
+                            @PathVariable Long eventId) {
+        log.info("DELETE request: удалаение события {} из подборки id={}",eventId, compId);
+        compilationService.deleteEvent(compId, eventId);
     }
 }

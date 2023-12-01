@@ -1,19 +1,24 @@
 package ru.practicum.mainservice.compilation.service;
 
-import org.springframework.data.domain.PageRequest;
-import ru.practicum.mainservice.compilation.dto.CompilationDto;
+import org.springframework.data.domain.Pageable;
 import ru.practicum.mainservice.compilation.dto.NewCompilationDto;
-import ru.practicum.mainservice.compilation.dto.UpdateCompilationRequest;
-import java.util.List;
+import ru.practicum.mainservice.compilation.model.Compilation;
+import java.util.Collection;
 
 public interface CompilationService {
-    CompilationDto addCompilation(NewCompilationDto newCompilationDto);
+    Collection<Compilation> getAll(Boolean pinned, Pageable pageable);
 
-    boolean deleteCompilation(Long compId);
+    Compilation getById(Long compId);
 
-    CompilationDto updateCompilation(Long compId, UpdateCompilationRequest upCompReq);
+    Compilation create(NewCompilationDto compilationDto);
 
-    CompilationDto findById(Long compId);
+    void addEvent(Long compId, Long eventId);
 
-    List<CompilationDto> findAll(Boolean pinned, PageRequest pageRequest);
+    void pinCompilation(Long compId);
+
+    void unpinCompilation(Long compId);
+
+    void delete(Long compId);
+
+    void deleteEvent(Long compId, Long eventId);
 }

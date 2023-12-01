@@ -3,8 +3,6 @@ package ru.practicum.mainservice.event.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,67 +12,61 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import ru.practicum.mainservice.config.Create;
+import ru.practicum.mainservice.event.dto.EventFullDto;
+import ru.practicum.mainservice.event.dto.EventShortDto;
 import ru.practicum.mainservice.event.dto.NewEventDto;
-import ru.practicum.mainservice.event.dto.EventUserDto;
+import ru.practicum.mainservice.event.dto.UpdateEventRequest;
+import ru.practicum.mainservice.event.mapper.EventMapper;
 import ru.practicum.mainservice.event.service.EventService;
-import ru.practicum.mainservice.request.dto.EventRequestStatusUpdateRequest;
-import javax.validation.Valid;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.PositiveOrZero;
+import javax.validation.constraints.Min;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Slf4j
-@Validated
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/users/{userId}/events")
 public class EventPrivateController {
+    private final EventMapper eventMapper;
     private final EventService eventService;
 
     @PostMapping
-    ResponseEntity<Object> addEvent(@Positive @PathVariable("userId") Long userId,
-                                    @Valid @RequestBody NewEventDto newEventDto) {
-        log.info("Получен запрос POST на добавление категории {}", newEventDto.toString());
-        return new ResponseEntity<>(eventService.addEvent(userId, newEventDto), HttpStatus.CREATED);
-    }
-
-    @GetMapping
-    ResponseEntity<Object> findAllUserEvents(@Positive @PathVariable("userId") Long userId,
-                                             @PositiveOrZero @RequestParam(defaultValue = "0") int from,
-                                             @Positive @RequestParam(defaultValue = "10") int size
-    ) {
-        log.info("Получен GET запрос на просмотр событий, добавленных пользователем {}", userId);
-        return new ResponseEntity<>(eventService.findAllUserEvents(userId, PageRequest.of(from / size, size)),
-                HttpStatus.OK);
+    public EventFullDto create(@Validated({Create.class})
+                               @RequestBody NewEventDto event,
+                               @PathVariable Long userId) {
+        log.info("POST request: создание события {}", event);
+        return eventMapper.convertToFullDto(eventService.create(event, userId));
     }
 
     @GetMapping("/{eventId}")
-    ResponseEntity<Object> findUserEvent(@Positive @PathVariable("userId") Long userId,
-                                         @Positive @PathVariable("eventId") Long eventId) {
-        log.info("Получен GET запрос на просмотр события, добавленного пользователем {}", userId);
-        return new ResponseEntity<>(eventService.findUserEvent(userId, eventId), HttpStatus.OK);
+    public EventFullDto getByOwner(@PathVariable Long userId,
+                                   @PathVariable Long eventId) {
+        log.info("GET request: запрос события {} пользователем {}", eventId, userId);
+        return eventMapper.convertToFullDto(eventService.getByOwner(userId, eventId));
+    }
+
+    @GetMapping
+    public Collection<EventShortDto> getAllByOwner(@RequestParam (defaultValue = "0", required = false) @Min(0)  int from,
+                                                   @RequestParam (defaultValue = "10", required = false) @Min(1) int size,
+                                                   @PathVariable Long userId) {
+        log.info("GET request: запрос событий пользователя {}", userId);
+        return eventService.getAllByOwner(userId, PageRequest.of(from / size, size)).stream()
+                .map(eventMapper::convertToShortDto)
+                .collect(Collectors.toList());
+    }
+
+    @PatchMapping
+    public EventFullDto update(@RequestBody UpdateEventRequest eventRequest,
+                               @PathVariable Long userId) {
+        log.info("PATCH request: изменения события {}", eventRequest);
+        return eventMapper.convertToFullDto(eventService.update(userId, eventRequest));
     }
 
     @PatchMapping("/{eventId}")
-    ResponseEntity<Object> updateEvent(@Positive @PathVariable("userId") Long userId,
-                                       @Positive @PathVariable("eventId") Long eventId,
-                                       @Valid @RequestBody EventUserDto updateEvent) {
-        log.info("Получен PATCH запрос на обновление события пользователем {}", userId);
-        return new ResponseEntity<>(eventService.updateEventByUser(userId, eventId, updateEvent), HttpStatus.OK);
-    }
-
-    @GetMapping("/{eventId}/requests")
-    ResponseEntity<Object> getInfoAboutRequests(@Positive @PathVariable("userId") Long userId,
-                                                @Positive @PathVariable("eventId") Long eventId) {
-        log.info("Получен GET запрос от инициатора {} события {} на просмотр запросов на участие в событии",
-                userId, eventId);
-        return new ResponseEntity<>(eventService.getInfoAboutRequests(userId, eventId), HttpStatus.OK);
-    }
-
-    @PatchMapping("/{eventId}/requests")
-    ResponseEntity<Object> updateRequestStatus(@Positive @PathVariable("userId") Long userId,
-                                               @Positive @PathVariable("eventId") Long eventId,
-                                               @RequestBody EventRequestStatusUpdateRequest updateRequest) {
-        log.info("Получен PATCH запрос на обновление статусов запросов на участие в событии {}", eventId);
-        return new ResponseEntity<>(eventService.updateRequestStatus(userId, eventId, updateRequest), HttpStatus.OK);
+    public EventFullDto cancelEvent(@PathVariable Long userId,
+                                    @PathVariable Long eventId) {
+        log.info("PATCH request: отмена события {} пользователя {}",eventId, userId);
+        return eventMapper.convertToFullDto(eventService.cancel(userId, eventId));
     }
 }
