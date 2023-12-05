@@ -9,36 +9,22 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface StatisticRepository extends JpaRepository<EndpointHit, Long> {
-    @Query("SELECT h.app AS app, h.uri AS uri, count(h.ip) AS hits " +
-            "FROM EndpointHit h " +
-            "WHERE h.created BETWEEN ?1 AND ?2 " +
-            "GROUP BY h.app, h.uri, h.ip ORDER BY hits DESC")
-    List<ViewStats> countByTimestamp(@Param("start") LocalDateTime start,
-                                     @Param("end") LocalDateTime end);
+@Query("SELECT h.app AS app, h.uri AS uri, COUNT(DISTINCT h.ip) AS hits " +
+        "FROM EndpointHit h " +
+        "GROUP BY h.app, h.uri " +
+        "ORDER BY hits DESC")
 
-    @Query("SELECT h.app AS app, h.uri AS uri, count(DISTINCT h.ip) AS hits " +
-            "FROM EndpointHit h " +
-            "WHERE h.created BETWEEN ?1 AND ?2 " +
-            "GROUP BY h.app, h.uri, h.ip " +
-            "ORDER BY hits DESC")
-    List<ViewStats> countByTimestampUniqueIp(@Param("start") LocalDateTime start,
-                                             @Param("end") LocalDateTime end);
+List<ViewStats> findUniqueStatData(@Param("start") LocalDateTime start,
+                                   @Param("end") LocalDateTime end,
+                                   @Param("uris") List<String> uris);
 
-    @Query("SELECT h.app AS app, h.uri AS uri, count(DISTINCT h.ip) AS hits " +
+    @Query("SELECT h.app AS app, h.uri AS uri, COUNT(h.ip) AS hits " +
             "FROM EndpointHit h " +
-            "WHERE h.created BETWEEN ?1 AND ?2 AND h.uri IN (?3) " +
+            "WHERE h.created BETWEEN :start AND :end " +
+            "AND ((:uris) IS NULL OR h.uri IN :uris) " +
             "GROUP BY h.app, h.uri " +
             "ORDER BY hits DESC")
-    List<ViewStats> findStatisticWithUnique(@Param("start") LocalDateTime start,
-                                            @Param("ens") LocalDateTime end,
-                                            @Param("uris") String[] uris);
-
-    @Query("SELECT h.app AS app, h.uri AS uri, count(h.ip) AS hits " +
-            "FROM EndpointHit h " +
-            "WHERE h.created BETWEEN ?1 AND ?2 AND h.uri IN (?3) " +
-            "GROUP BY h.app, h.uri " +
-            "ORDER BY hits DESC")
-    List<ViewStats> findStatisticNotUnique(@Param("start") LocalDateTime start,
-                                           @Param("end") LocalDateTime end,
-                                           @Param("uris") String[] uris);
+    List<ViewStats> findUnUniqueStatData(@Param("start") LocalDateTime start,
+                                         @Param("end") LocalDateTime end,
+                                         @Param("uris") List<String> uris);
 }

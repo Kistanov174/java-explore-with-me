@@ -1,10 +1,10 @@
 package ru.practicum.statisticserver.model;
 
-import lombok.ToString;
-import lombok.Setter;
 import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Id;
@@ -13,24 +13,27 @@ import javax.persistence.GenerationType;
 import javax.persistence.Column;
 import java.time.LocalDateTime;
 
-
 @Entity
 @Getter
 @Setter
 @ToString
-@AllArgsConstructor
-@RequiredArgsConstructor
 @Table(name = "hits")
+@AllArgsConstructor
+@NoArgsConstructor
 public class EndpointHit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(nullable = false)
+
+    @Column(name = "app", nullable = false)
     private String app;
-    @Column(nullable = false)
+
+    @Column(name = "uri", nullable = false)
     private String uri;
-    @Column(nullable = false)
+
+    @Column(name = "ip", nullable = false)
     private String ip;
-    @Column(name = "timestamp", nullable = false)
+
+    @Column(name = "created", nullable = false)
     private LocalDateTime created;
 }
