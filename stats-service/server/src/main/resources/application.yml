@@ -18,9 +18,9 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/stats}
-    username: ${DATABASE_USERNAME:user}
-    password: ${DATABASE_PASSWORD:sa}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/stats}
+    username: ${SPRING_DATASOURCE_USERNAME:user}
+    password: ${SPRING_DATASOURCE_PASSWORD:sa}
 
 logging:
   level:

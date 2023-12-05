@@ -18,8 +18,8 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/emwDb}
-    username: ${DATABASE_USERNAME:user}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/emwDb}
+    username: ${SPRING_DATASOURCE_USERNAME:user}
     password: ${DATABASE_PASSWORD:sa}
 
 logging:
