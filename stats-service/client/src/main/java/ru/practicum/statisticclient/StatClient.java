@@ -21,7 +21,7 @@ import java.util.List;
 public class StatClient {
     private final RestTemplate template;
 
-    public StatClient(@Value("${STAT_SERVER_URL:http://localhost:9090}") String url,
+    public StatClient(@Value("${SERVER_URL:http://localhost:9090}") String url,
                       RestTemplateBuilder template) {
         this.template = template
                 .uriTemplateHandler(new DefaultUriBuilderFactory(url))
