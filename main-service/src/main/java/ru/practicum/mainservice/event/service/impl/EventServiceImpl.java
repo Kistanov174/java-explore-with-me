@@ -1,6 +1,8 @@
 package ru.practicum.mainservice.event.service.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.mainservice.category.model.Category;
 import ru.practicum.mainservice.category.repository.CategoryRepository;
@@ -35,6 +37,8 @@ import ru.practicum.mainservice.user.model.User;
 import ru.practicum.mainservice.user.repository.UserRepository;
 import ru.practicum.statdto.ViewStatsDto;
 import ru.practicum.statisticclient.StatClient;
+
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -45,6 +49,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
@@ -52,20 +57,14 @@ public class EventServiceImpl implements EventService {
     private final RequestRepository partReqRepository;
     private final EventMapper mapper;
     private final RequestMapper partReqMapper;
-    private final StatClient statsClient;
     public DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    @Value("${SERVER_URL:http://localhost:9090}")
+    private String clientUrl;
+    private StatClient statsClient;
 
-    @Autowired
-    public EventServiceImpl(EventRepository eventRepository,UserRepository userRepository,
-                            CategoryRepository categoryRepository, RequestRepository partReqRepository,
-                            EventMapper mapper, RequestMapper partReqMapper, StatClient statsClient) {
-        this.eventRepository = eventRepository;
-        this.userRepository = userRepository;
-        this.categoryRepository = categoryRepository;
-        this.partReqRepository = partReqRepository;
-        this.mapper = mapper;
-        this.partReqMapper = partReqMapper;
-        this.statsClient = statsClient;
+    @PostConstruct
+    private void init() {
+        statsClient = new StatClient(clientUrl, new RestTemplateBuilder());
     }
 
     @Transactional
