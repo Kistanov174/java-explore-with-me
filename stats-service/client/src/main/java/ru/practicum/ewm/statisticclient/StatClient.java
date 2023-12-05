@@ -1,5 +1,6 @@
 package ru.practicum.ewm.statisticclient;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,8 @@ import java.util.List;
 public class StatClient {
     private final RestTemplate template;
 
-    public StatClient(String url, RestTemplateBuilder templateBuilder) {
+    public StatClient(@Value("${SERVER_URL:http://localhost:9090}")String url,
+                      RestTemplateBuilder templateBuilder) {
         this.template = templateBuilder
                 .uriTemplateHandler(new DefaultUriBuilderFactory(url))
                 .requestFactory(HttpComponentsClientHttpRequestFactory::new)
