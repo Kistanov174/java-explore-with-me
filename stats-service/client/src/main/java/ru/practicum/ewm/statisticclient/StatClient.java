@@ -21,14 +21,13 @@ import java.util.List;
 public class StatClient {
     private final RestTemplate template;
 
-    public StatClient(@Value("${SERVER_URL:http://localhost:9090}")String url,
+    public StatClient(@Value("${SERVER_URL}")String url,
                       RestTemplateBuilder templateBuilder) {
         this.template = templateBuilder
                 .uriTemplateHandler(new DefaultUriBuilderFactory(url))
                 .requestFactory(HttpComponentsClientHttpRequestFactory::new)
                 .build();
     }
-
 
     public void addHit(HttpServletRequest request) {
         EndpointHitDto endpointHitDto = new EndpointHitDto(
