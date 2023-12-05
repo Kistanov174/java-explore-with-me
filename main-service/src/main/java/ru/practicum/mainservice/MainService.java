@@ -4,10 +4,10 @@ import org.modelmapper.ModelMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
-import ru.practicum.statisticclient.StatClient;
+//import org.springframework.context.annotation.Import;
+//import ru.practicum.statisticclient.StatClient;
 
-@Import({StatClient.class})
+//@Import({StatClient.class})
 @SpringBootApplication
 public class MainService {
     @Bean
