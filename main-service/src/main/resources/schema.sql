@@ -36,8 +36,7 @@ CREATE TABLE IF NOT EXISTS events
     published_on       TIMESTAMP,
     request_moderation BOOLEAN                                 NOT NULL,
     state              VARCHAR                                 NOT NULL,
-    title              VARCHAR(120)                            NOT NULL,
-    event_views        BIGINT DEFAULT 0
+    title              VARCHAR(120)                            NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS requests
@@ -59,5 +58,6 @@ CREATE TABLE IF NOT EXISTS compilations
 CREATE TABLE IF NOT EXISTS compilation_event
 (
     event_id       BIGINT NOT NULL REFERENCES events (event_id) ON DELETE CASCADE,
-    compilation_id BIGINT NOT NULL REFERENCES compilations (compilation_id) ON DELETE CASCADE
+    compilation_id BIGINT NOT NULL REFERENCES compilations (compilation_id) ON DELETE CASCADE,
+    PRIMARY KEY(event_id, compilation_id)
 );

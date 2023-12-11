@@ -5,7 +5,19 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Id;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Column;
+import javax.persistence.ManyToOne;
+import javax.persistence.JoinColumn;
+import javax.persistence.AttributeOverrides;
+import javax.persistence.AttributeOverride;
+import javax.persistence.Enumerated;
+import javax.persistence.Transient;
+import javax.persistence.EnumType;
 import java.time.LocalDateTime;
 import ru.practicum.mainservice.user.model.User;
 import ru.practicum.mainservice.category.model.Category;
@@ -30,7 +42,7 @@ public class Event {
     private Category category;
 
     @Column(name = "confirmed_requests")
-    private int confirmedRequests;
+    private Integer confirmedRequests;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "create_date", nullable = false)
@@ -47,7 +59,6 @@ public class Event {
     @JoinColumn(name = "initiator_id")
     private User initiator;
 
-    @Embedded
     @AttributeOverrides({
             @AttributeOverride(name = "lat", column = @Column(name = "lat")),
             @AttributeOverride(name = "lon", column = @Column(name = "lon"))
@@ -55,13 +66,13 @@ public class Event {
     private Location location;
 
     @Column(name = "paid", nullable = false)
-    private boolean paid;
+    private Boolean paid;
 
     @Column(name = "participant_limit")
-    private int participantLimit;
+    private Integer participantLimit;
 
     @Column(name = "available")
-    private boolean available;
+    private Boolean available;
 
     @Column(name = "published_on", nullable = false)
     private LocalDateTime publishedOn;
@@ -76,6 +87,6 @@ public class Event {
     @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(name = "event_views", nullable = false)
-    private Long views;
+    @Transient
+    private Long views = 0L;
 }

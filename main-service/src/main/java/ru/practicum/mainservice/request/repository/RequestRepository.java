@@ -6,9 +6,9 @@ import ru.practicum.mainservice.request.model.Request;
 import java.util.List;
 
 public interface RequestRepository extends JpaRepository<Request, Long> {
-    Object findByRequester_IdAndEvent_Id(Long requesterId, Long eventId);
+    boolean existsByRequesterIdAndEventId(Long requesterId, Long eventId);
 
-    List<Request> findAllByRequester_Id(Long requesterId);
+    List<Request> findAllByRequesterId(Long requesterId);
 
-    List<Request> findAllByEvent_Initiator_IdAndEvent_Id(Long initiatorId, Long eventId);
+    List<Request> findAllByEventInitiatorIdAndEventId(Long initiatorId, Long eventId);
 }

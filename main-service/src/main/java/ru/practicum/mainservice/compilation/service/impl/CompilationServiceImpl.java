@@ -18,8 +18,7 @@ import ru.practicum.mainservice.event.model.Event;
 import ru.practicum.mainservice.event.repository.EventRepository;
 import ru.practicum.mainservice.exception.ConflictException;
 import ru.practicum.mainservice.exception.DataNotFoundException;
-
-
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,7 +33,7 @@ public class CompilationServiceImpl implements CompilationService {
     @Transactional
     @Override
     public CompilationDto addCompilation(NewCompilationDto newCompilationDto) {
-        if (checkingUniqTitle(newCompilationDto.getTitle())) {
+        if (checkingUniqueTitle(newCompilationDto.getTitle())) {
             throw new ConflictException("could not execute statement;" +
                     " SQL [n/a]; constraint [uq_compilation_title];" +
                     " nested exception is org.hibernate.exception.ConstraintViolationException:" +
@@ -42,11 +41,8 @@ public class CompilationServiceImpl implements CompilationService {
         }
         Compilation compilation = mapper.toEntityFromNew(newCompilationDto);
         if (newCompilationDto.getEvents() != null && !newCompilationDto.getEvents().isEmpty()) {
-            List<Event> events = newCompilationDto.getEvents()
-                    .stream()
-                    .map(this::getEvent)
-                    .collect(Collectors.toList());
-            compilation.setEvents(events);
+            List<Event> events = eventRepository.findAllById(newCompilationDto.getEvents());
+            compilation.setEvents(new HashSet<>(events));
         }
         CompilationDto compilationDto = mapper.toDto(compilationRepository.save(compilation));
         log.info("Добавлена новая подборка событий {}", compilationDto);
@@ -58,16 +54,13 @@ public class CompilationServiceImpl implements CompilationService {
     public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest upCompReq) {
         Compilation compilation = getCompilation(compId);
 
-
         Provider<Compilation> compProvider = p -> compilation;
         mapper.getPropertyMapper().setProvider(compProvider);
 
         Compilation actualComp = mapper.toEntityFromUpdate(upCompReq);
         if (upCompReq.getEvents() != null && !upCompReq.getEvents().isEmpty()) {
-            List<Event> events = upCompReq.getEvents()
-                    .stream()
-                    .map(this::getEvent)
-                    .collect(Collectors.toList());
+            List<Event> events = eventRepository.findAllById(upCompReq.getEvents());
+            compilation.setEvents(new HashSet<>(events));
             actualComp.getEvents().addAll(events);
         }
 
@@ -110,17 +103,12 @@ public class CompilationServiceImpl implements CompilationService {
         return compilationDto;
     }
 
-    private boolean checkingUniqTitle(String title) {
-        return compilationRepository.findCompilationByTitleIgnoreCase(title) != null;
+    private boolean checkingUniqueTitle(String title) {
+        return compilationRepository.existsByTitleIgnoreCase(title);
     }
 
     private Compilation getCompilation(Long compId) {
         return compilationRepository.findById(compId)
                 .orElseThrow(() -> new DataNotFoundException("Compilation with id=" + compId + " was not found"));
-    }
-
-    private Event getEvent(Long id) {
-        return eventRepository.findById(id)
-                .orElseThrow(() -> new DataNotFoundException("Event with id=" + id + " was not found"));
     }
 }

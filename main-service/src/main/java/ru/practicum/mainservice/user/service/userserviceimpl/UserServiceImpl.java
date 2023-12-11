@@ -13,7 +13,6 @@ import ru.practicum.mainservice.user.dto.UserDto;
 import ru.practicum.mainservice.user.model.User;
 import ru.practicum.mainservice.user.repository.UserRepository;
 import ru.practicum.mainservice.user.service.UserService;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -72,6 +71,6 @@ public class UserServiceImpl implements UserService {
     }
 
     private boolean checkIsUniqueEmail(String email) {
-        return userRepository.findUserByEmail(email) != null;
+        return userRepository.existsByEmail(email);
     }
 }

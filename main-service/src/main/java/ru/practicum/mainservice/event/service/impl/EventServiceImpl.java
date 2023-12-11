@@ -12,13 +12,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.mainservice.category.model.Category;
 import ru.practicum.mainservice.category.repository.CategoryRepository;
-import ru.practicum.mainservice.event.dto.*;
+import ru.practicum.mainservice.event.dto.EventUserDto;
+import ru.practicum.mainservice.event.dto.EventFullDto;
+import ru.practicum.mainservice.event.dto.NewEventDto;
+import ru.practicum.mainservice.event.dto.EventShortDto;
+import ru.practicum.mainservice.event.dto.EventAdminDto;
+import ru.practicum.mainservice.event.dto.EventPublicDto;
 import ru.practicum.mainservice.event.mapper.EventMapper;
 import ru.practicum.mainservice.event.model.Event;
 import ru.practicum.mainservice.event.model.QEvent;
 import ru.practicum.mainservice.event.model.State;
-import ru.practicum.mainservice.event.model.StateAction;
-import ru.practicum.mainservice.event.model.StateActionByAdmin;
 import ru.practicum.mainservice.event.repository.EventRepository;
 import ru.practicum.mainservice.event.service.EventService;
 import ru.practicum.mainservice.exception.ConflictException;
@@ -70,9 +73,6 @@ public class EventServiceImpl implements EventService {
         event.setState(State.PENDING);
         event.setCreatedOn(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
         event.setConfirmedRequests(0);
-        if (newEventDto.getRequestModeration() == null) {
-            event.setRequestModeration(true);
-        }
         EventFullDto eventFullDto = mapper.mapToEventFullDtoFromEvent(eventRepository.save(event));
         log.info("Добавлено новое событие {}", eventFullDto);
         return eventFullDto;
@@ -112,7 +112,7 @@ public class EventServiceImpl implements EventService {
         mapper.getPropertyUpdEventUserReq().setProvider(eventProvider);
         Event actualEvent = mapper.mapToEventFromEventAdminDto(updateEvent);
         if (updateEvent.getStateAction() != null) {
-            if (updateEvent.getStateAction().equals(StateAction.CANCEL_REVIEW)) {
+            if (updateEvent.getStateAction().equals(EventUserDto.StateAction.CANCEL_REVIEW)) {
                 actualEvent.setState(State.CANCELED);
             } else {
                 actualEvent.setState(State.PENDING);
@@ -127,7 +127,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<RequestDto> getInfoAboutRequests(Long userId, Long eventId) {
         List<RequestDto> requests =
-                partReqRepository.findAllByEvent_Initiator_IdAndEvent_Id(userId, eventId)
+                partReqRepository.findAllByEventInitiatorIdAndEventId(userId, eventId)
                         .stream()
                         .map(partReqMapper::toDto)
                         .collect(Collectors.toList());
@@ -162,8 +162,8 @@ public class EventServiceImpl implements EventService {
         Event actualEvent = mapper.mapToEventFromEventAdminDto(updEventReq);
 
         if (updEventReq.getStateAction() != null) {
-            validationUpdateEventByAdmin(event, updEventReq.getStateAction());
-            if (updEventReq.getStateAction().equals(StateActionByAdmin.PUBLISH_EVENT)) {
+            validationUpdateEventByAdmin(event, updEventReq);
+            if (updEventReq.getStateAction().equals(EventAdminDto.StateAction.PUBLISH_EVENT)) {
                 actualEvent.setState(State.PUBLISHED);
                 actualEvent.setPublishedOn(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
                 actualEvent.setAvailable(true);
@@ -193,6 +193,8 @@ public class EventServiceImpl implements EventService {
         return events;
     }
 
+    @Transactional(readOnly = true)
+    @Override
     public List<EventPublicDto> getEventsForPublic(String text, List<Long> categories, Boolean paid,
                                                    LocalDateTime rangeStart, LocalDateTime rangeEnd,
                                                    Boolean onlyAvailable, String sort, int from, int size,
@@ -235,10 +237,7 @@ public class EventServiceImpl implements EventService {
     private EventRequestStatusUpdateResult changeRequestStatus(Event event,
                                                                EventRequestStatusUpdateRequest updateRequest) {
         EventRequestStatusUpdateResult result = new EventRequestStatusUpdateResult();
-        List<Request> requests = updateRequest.getRequestIds()
-                .stream()
-                .map(this::getPartRequest)
-                .collect(Collectors.toList());
+        List<Request> requests = partReqRepository.findAllById(updateRequest.getRequestIds());
         requests.forEach(request -> {
             if (!request.getStatus().equals(RequestStatus.PENDING)) {
                 throw new ConflictException("Request must have status PENDING");
@@ -292,8 +291,9 @@ public class EventServiceImpl implements EventService {
         return conditions;
     }
 
-    private BooleanBuilder conditionForUserFilter(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart,
-                                                  LocalDateTime rangeEnd, Boolean onlyAvailable) {
+    private BooleanBuilder conditionForUserFilter(String text, List<Long> categories, Boolean paid,
+                                                  LocalDateTime rangeStart, LocalDateTime rangeEnd,
+                                                  Boolean onlyAvailable) {
         BooleanBuilder conditions = getConditions(categories, rangeStart, rangeEnd);
         conditions.and(QEvent.event.state.eq(State.PUBLISHED));
         if (text != null) {
@@ -309,14 +309,16 @@ public class EventServiceImpl implements EventService {
         return conditions;
     }
 
-    private void validationUpdateEventByAdmin(Event event, StateActionByAdmin newStatus) {
-        if (newStatus.equals(StateActionByAdmin.PUBLISH_EVENT) &&
+    private void validationUpdateEventByAdmin(Event event, EventAdminDto updEventReq) {
+        if (updEventReq.getStateAction().equals(EventAdminDto.StateAction.PUBLISH_EVENT) &&
                 event.getEventDate().isBefore(LocalDateTime.now().plusHours(1))) {
             throw new IncorrectConditionException("Дата начала изменяемого события должна быть не ранее" +
                     " чем за час от даты публикации" + event.getEventDate().toString());
         }
-        if ((newStatus.equals(StateActionByAdmin.PUBLISH_EVENT) && !event.getState().equals(State.PENDING)) ||
-                (newStatus.equals(StateActionByAdmin.REJECT_EVENT) && event.getState().equals(State.PUBLISHED))) {
+        if ((updEventReq.getStateAction().equals(EventAdminDto.StateAction.PUBLISH_EVENT)
+                && !event.getState().equals(State.PENDING)) ||
+                (updEventReq.getStateAction().equals(EventAdminDto.StateAction.REJECT_EVENT)
+                        && event.getState().equals(State.PUBLISHED))) {
             throw new ConflictException("Cannot publish the event because it's not in the right state:" +
                     " PUBLISHED");
         }
@@ -324,6 +326,7 @@ public class EventServiceImpl implements EventService {
 
     private void validationUpdateEventByInitiator(Long userId, Event event, EventUserDto updateEvent) {
         getUser(userId);
+
         if (!event.getInitiator().getId().equals(userId)) {
             throw new DataNotFoundException("Event with id=" + event.getId() + " was not found");
         }
@@ -358,11 +361,6 @@ public class EventServiceImpl implements EventService {
     private User getUser(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new DataNotFoundException("User with id=" + id + " was not found"));
-    }
-
-    private Request getPartRequest(Long id) {
-        return partReqRepository.findById(id)
-                .orElseThrow(() -> new DataNotFoundException("ParticipationRequest with id=" + id + " was not found"));
     }
 
     private Category getCategory(Long catId) {

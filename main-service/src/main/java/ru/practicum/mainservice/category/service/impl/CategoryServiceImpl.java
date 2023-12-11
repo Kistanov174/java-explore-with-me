@@ -14,7 +14,6 @@ import ru.practicum.mainservice.category.service.CategoryService;
 import ru.practicum.mainservice.event.repository.EventRepository;
 import ru.practicum.mainservice.exception.ConflictException;
 import ru.practicum.mainservice.exception.DataNotFoundException;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,14 +44,13 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryDto updateCategory(Long catId, CategoryDto categoryDto) {
         String newName = categoryDto.getName();
-
-        if (checkIsUniqueName(newName) && !getCategory(catId).getName().equals(newName)) {
+        Category category = getCategory(catId);
+        if (!getCategory(catId).getName().equals(newName) && checkIsUniqueName(newName)) {
             throw new ConflictException("could not execute statement;" +
                     " SQL [n/a]; constraint [uq_category_name];" +
                     " nested exception is org.hibernate.exception.ConstraintViolationException:" +
                     " could not execute statement");
         }
-        Category category = getCategory(catId);
         category.setName(newName);
         CategoryDto actualCategoryDto = modelMapper.map(categoryRepository.save(category), CategoryDto.class);
         log.info("Название категории обновлено {}", actualCategoryDto);
@@ -95,6 +93,6 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     private boolean checkIsUniqueName(String name) {
-        return categoryRepository.findCategoryByNameIgnoreCase(name) != null;
+        return categoryRepository.existsByNameIgnoreCase(name);
     }
 }

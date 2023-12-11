@@ -4,15 +4,22 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import ru.practicum.mainservice.exception.ValidationException;
+import ru.practicum.mainservice.request.dto.RequestDto;
 import ru.practicum.mainservice.request.service.RequestService;
-
 import javax.validation.constraints.Positive;
+import java.util.List;
 
 @Slf4j
-@RestController
+@Controller
 @Validated
 @RequiredArgsConstructor
 @RequestMapping("/users/{userId}/requests")
@@ -20,8 +27,8 @@ public class RequestController {
     private final RequestService service;
 
     @PostMapping
-    ResponseEntity<Object> addRequest(@Positive @PathVariable("userId") Long userId,
-                                      @RequestParam(required = false) Long eventId) {
+    ResponseEntity<RequestDto> addRequest(@Positive @PathVariable("userId") Long userId,
+                                          @RequestParam(required = false) Long eventId) {
         if (eventId == null || eventId == 0) {
             throw new ValidationException("Не передан обязательный query parameter");
         }
@@ -30,15 +37,15 @@ public class RequestController {
     }
 
     @GetMapping
-    ResponseEntity<Object> findAllRequests(@Positive @PathVariable("userId") Long userId) {
+    ResponseEntity<List<RequestDto>> findAllRequests(@Positive @PathVariable("userId") Long userId) {
         log.info("Получен GET запрос на просмотр запросов пользователя {} на участие в событиях", userId);
-        return new ResponseEntity<>(service.findAllByRequesterId(userId), HttpStatus.OK);
+        return ResponseEntity.ok(service.findAllByRequesterId(userId));
     }
 
     @PatchMapping("/{requestId}/cancel")
-    ResponseEntity<Object> cancelRequest(@Positive @PathVariable("userId") Long userId,
+    ResponseEntity<RequestDto> cancelRequest(@Positive @PathVariable("userId") Long userId,
                                          @Positive @PathVariable("requestId") Long requestId) {
         log.info("Получен PATCH запрос на отмену запроса {} на участие в событии пользователем {}", requestId, userId);
-        return new ResponseEntity<>(service.changeStatusToCancelled(userId, requestId), HttpStatus.OK);
+        return ResponseEntity.ok(service.changeStatusToCancelled(userId, requestId));
     }
 }

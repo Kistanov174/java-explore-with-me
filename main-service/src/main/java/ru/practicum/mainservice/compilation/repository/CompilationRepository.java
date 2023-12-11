@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import ru.practicum.mainservice.compilation.model.Compilation;
 
 public interface CompilationRepository extends JpaRepository<Compilation, Long> {
-    Object findCompilationByTitleIgnoreCase(String title);
+    boolean existsByTitleIgnoreCase(String title);
 
     Page<Compilation> findAllByPinned(Boolean pinned, PageRequest pageRequest);
 }

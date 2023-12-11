@@ -4,5 +4,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import ru.practicum.mainservice.category.model.Category;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
-    Object findCategoryByNameIgnoreCase(String name);
+    boolean existsByNameIgnoreCase(String name);
 }

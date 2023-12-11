@@ -41,6 +41,6 @@ public class StatController {
             @RequestParam(required = false) List<String> uris,
             @RequestParam(defaultValue = "false") boolean unique) {
         log.info("Created request to get statistic data");
-        return new ResponseEntity<>(statisticService.getStatisticData(start, end, uris, unique), HttpStatus.OK);
+        return ResponseEntity.ok(statisticService.getStatisticData(start, end, uris, unique));
     }
 }
