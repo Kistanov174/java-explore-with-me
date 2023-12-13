@@ -4,7 +4,11 @@ import lombok.Getter;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeMap;
 import org.springframework.stereotype.Component;
-import ru.practicum.mainservice.event.dto.*;
+import ru.practicum.mainservice.event.dto.EventUserDto;
+import ru.practicum.mainservice.event.dto.EventAdminDto;
+import ru.practicum.mainservice.event.dto.NewEventDto;
+import ru.practicum.mainservice.event.dto.EventFullDto;
+import ru.practicum.mainservice.event.dto.EventShortDto;
 import ru.practicum.mainservice.event.model.Event;
 import ru.practicum.mainservice.request.dto.RequestDto;
 import ru.practicum.mainservice.request.model.Request;
@@ -45,9 +49,5 @@ public class EventMapper {
 
     public Event mapToEventFromEventAdminDto(EventAdminDto updatedEvent) {
         return modelMapper.map(updatedEvent, Event.class);
-    }
-
-    public EventPublicDto mapToEventPublicDto(Event event) {
-        return modelMapper.map(event, EventPublicDto.class);
     }
 }

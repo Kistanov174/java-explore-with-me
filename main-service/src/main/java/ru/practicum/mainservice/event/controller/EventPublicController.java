@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PathVariable;
 import ru.practicum.mainservice.event.dto.EventFullDto;
-import ru.practicum.mainservice.event.dto.EventPublicDto;
 import ru.practicum.mainservice.event.service.EventService;
 import ru.practicum.mainservice.exception.ValidationException;
 import javax.servlet.http.HttpServletRequest;
@@ -29,7 +28,7 @@ public class EventPublicController {
     private final EventService eventService;
 
     @GetMapping
-    public ResponseEntity<List<EventPublicDto>> findAnyEvents(@RequestParam(required = false) String text,
+    public ResponseEntity<List<EventFullDto>> findAnyEvents(@RequestParam(required = false) String text,
                                                               @RequestParam(required = false) List<Long> categories,
                                                               @RequestParam(required = false) Boolean paid,
                                                               @RequestParam(required = false)

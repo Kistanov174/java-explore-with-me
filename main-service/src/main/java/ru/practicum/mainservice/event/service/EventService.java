@@ -29,7 +29,7 @@ public interface EventService {
     List<EventFullDto> getEventsForAdmin(List<Long> users, List<State> states, List<Long> categories,
                                          LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size);
 
-    List<EventPublicDto> getEventsForPublic(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart,
+    List<EventFullDto> getEventsForPublic(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart,
                                             LocalDateTime rangeEnd, Boolean onlyAvailable, String sort, int from,
                                             int size, HttpServletRequest request);
 

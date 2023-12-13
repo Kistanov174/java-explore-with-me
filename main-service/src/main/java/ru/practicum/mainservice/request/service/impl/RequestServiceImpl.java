@@ -36,10 +36,11 @@ public class RequestServiceImpl implements RequestService {
     public RequestDto addRequest(Long userId, Long eventId) {
         User user = getUser(userId);
         Event event = getEvent(eventId);
+        int countConfirmedRequests = requestRepository.calculateConfirmedRequestsEvent(eventId);
         if (requestRepository.existsByRequesterIdAndEventId(userId, eventId) ||
                 userId.equals(event.getInitiator().getId()) ||
                 !event.getState().equals(State.PUBLISHED) ||
-                (event.getParticipantLimit() != 0 && event.getParticipantLimit() - event.getConfirmedRequests() == 0)
+                (event.getParticipantLimit() != 0 && event.getParticipantLimit() - countConfirmedRequests == 0)
         ) {
             throw new ConflictException("Запрос не соответствует требованиям. Возможные проблемы: попытка добавить" +
                     " повторный запрос; инициатор события пытается добавить запрос на участие в своём событии;" +
@@ -50,7 +51,6 @@ public class RequestServiceImpl implements RequestService {
 
         if (!event.isRequestModeration() || event.getParticipantLimit() == 0) {
             newRequest.setStatus(RequestStatus.CONFIRMED);
-            event.setConfirmedRequests(event.getConfirmedRequests() + 1);
             eventRepository.save(event);
         } else {
             newRequest.setStatus(RequestStatus.PENDING);

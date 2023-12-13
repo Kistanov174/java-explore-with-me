@@ -41,9 +41,6 @@ public class Event {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @Column(name = "confirmed_requests")
-    private Integer confirmedRequests;
-
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "create_date", nullable = false)
     private LocalDateTime createdOn;
@@ -89,4 +86,7 @@ public class Event {
 
     @Transient
     private Long views = 0L;
+
+    @Transient
+    private Integer confirmedRequests = 0;
 }

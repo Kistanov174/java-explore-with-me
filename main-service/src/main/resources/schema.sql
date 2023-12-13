@@ -24,7 +24,6 @@ CREATE TABLE IF NOT EXISTS events
     annotation         VARCHAR(2000)                           NOT NULL,
     category_id        BIGINT                                  NOT NULL REFERENCES categories (category_id),
     create_date        TIMESTAMP,
-    confirmed_requests  BIGINT,
     description        VARCHAR(7000)                           NOT NULL,
     event_date         TIMESTAMP,
     initiator_id       BIGINT                                  NOT NULL REFERENCES users (user_id),
