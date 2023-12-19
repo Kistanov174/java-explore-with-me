@@ -26,9 +26,7 @@ import ru.practicum.mainservice.event.service.EventService;
 import ru.practicum.mainservice.exception.ConflictException;
 import ru.practicum.mainservice.exception.DataNotFoundException;
 import ru.practicum.mainservice.exception.IncorrectConditionException;
-import ru.practicum.mainservice.request.dto.RequestDto;
-import ru.practicum.mainservice.request.dto.EventRequestStatusUpdateResult;
-import ru.practicum.mainservice.request.dto.EventRequestStatusUpdateRequest;
+import ru.practicum.mainservice.request.dto.*;
 import ru.practicum.mainservice.request.mapper.RequestMapper;
 import ru.practicum.mainservice.request.model.Request;
 import ru.practicum.mainservice.request.model.RequestStatus;
@@ -41,10 +39,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Comparator;
-import java.util.ArrayList;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -361,23 +356,26 @@ public class EventServiceImpl implements EventService {
     }
 
     private List<Event> getEventWithStat(List<Event> events) {
-       if (events.size() > 1) {
+        Map<Long, Long> eventViews = new HashMap<>();
+        if (events.size() > 1) {
            events.sort(eventComparator);
-       }
-       LocalDateTime earliestDate = events.get(0).getPublishedOn();
+        }
+        LocalDateTime earliestDate = events.get(0).getPublishedOn();
         List<String> url = events.stream()
                 .map(event -> "/events/" + event.getId())
                 .collect(Collectors.toList());
 
         List<ViewStatsDto> stat = statsClient.getStat(earliestDate.format(formatter),
                 LocalDateTime.now().format(formatter), url, true).getBody();
+
         assert stat != null;
-        if (stat.size() > 0) {
-            int counter = 0;
-            for (ViewStatsDto line: stat) {
-                events.get(counter).setViews(line.getHits());
-                counter++;
-            }
+        for (ViewStatsDto line : stat) {
+            Long id = Long.parseLong(line.getUri().substring(8));
+            eventViews.put(id, line.getHits());
+        }
+
+        for (Event event : events) {
+            event.setViews(eventViews.getOrDefault(event.getId(), 1L));
         }
         return events;
     }
@@ -388,20 +386,19 @@ public class EventServiceImpl implements EventService {
     }
 
     private List<Event> insertCountConfirmedRequests(List<Event> events) {
-        int counter = 0;
         List<Long> ids = events
                 .stream()
                 .map(Event::getId)
                 .collect(Collectors.toList());
 
-        List<Integer> countConfirmedRequests = partReqRepository.calculateConfirmedRequestsEvents(ids);
+        Map<Long, Integer> countedEventRequests = partReqRepository.calculateConfirmedRequestsEvents(ids).stream()
+                .collect(Collectors.toMap(
+                        ViewCountEventRequest::getEventId,
+                        ViewCountEventRequest::getCountEventRequests)
+                );
 
         for (Event event : events) {
-            if (countConfirmedRequests.size() > counter)
-            {
-                event.setConfirmedRequests(countConfirmedRequests.get(counter));
-            }
-            counter++;
+            event.setConfirmedRequests(countedEventRequests.getOrDefault(event.getId(), 0));
         }
         return events;
     }
