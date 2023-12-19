@@ -1,6 +1,7 @@
 server:
   port: 8080
-  url: http://localhost:9090
+
+STAT_SERVER_URL: http://localhost:9090
 
 spring:
   output:
@@ -11,16 +12,17 @@ spring:
     hibernate:
       ddl-auto: none
       dialect: org.hibernate.dialect.PostgreSQL10Dialect
-      show_sql: true
+      format_sql: true
+
   sql:
     init:
       mode: always
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:emwDb}
-    username: ${POSTGRES_USER:root}
-    password: ${POSTGRES_PASSWORD:root}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/emwDb}
+    username: ${SPRING_DATASOURCE_USERNAME:user}
+    password: ${DATABASE_PASSWORD:sa}
 
 logging:
   level:
@@ -40,14 +42,3 @@ logging:
             JpaTransactionManager: DEBUG
         transaction:
           interceptor: TRACE
-
----
-spring:
-  config:
-    activate:
-      on-profile: ci,test
-  datasource:
-    driverClassName: org.h2.Driver
-    url: jdbc:h2:mem:emwDb
-    username: ${POSTGRES_USER:test}
-    password: ${POSTGRES_PASSWORD:test}

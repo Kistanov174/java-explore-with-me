@@ -17,7 +17,6 @@ import ru.practicum.statdto.ViewStatsDto;
 import ru.practicum.statisticserver.service.StatisticService;
 import javax.validation.Valid;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -36,16 +35,12 @@ public class StatController {
     }
 
     @GetMapping("/stats")
-    public ResponseEntity<List<ViewStatsDto>> getStatistic(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-                                   LocalDateTime start,
-                                      @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-                                   LocalDateTime end,
-                                      @RequestParam(required = false) String[] uris,
-                                      @RequestParam(defaultValue = "false") boolean unique) {
+    public ResponseEntity<List<ViewStatsDto>> getStatistic(
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
+            @RequestParam(required = false) List<String> uris,
+            @RequestParam(defaultValue = "false") boolean unique) {
         log.info("Created request to get statistic data");
-        if (end.isBefore(start) || end.isEqual(start)) {
-            return new ResponseEntity<>(Collections.emptyList(), HttpStatus.BAD_REQUEST);
-        }
-        return new ResponseEntity<>(statisticService.getStatisticData(start, end, uris, unique), HttpStatus.OK);
+        return ResponseEntity.ok(statisticService.getStatisticData(start, end, uris, unique));
     }
 }

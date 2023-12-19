@@ -6,5 +6,5 @@ create table if not exists hits
     app       VARCHAR(30)  NOT NULL,
     uri       VARCHAR(300) NOT NULL,
     ip        VARCHAR(50)  NOT NULL,
-    timestamp TIMESTAMP WITHOUT TIME ZONE NOT NULL
+    created TIMESTAMP WITHOUT TIME ZONE NOT NULL
 );

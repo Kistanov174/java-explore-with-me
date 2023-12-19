@@ -1,5 +1,6 @@
 package ru.practicum.statisticclient;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
@@ -14,19 +15,28 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.statdto.EndpointHitDto;
 import ru.practicum.statdto.ViewStatsDto;
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+@Slf4j
 @Service
 public class StatClient {
     private final RestTemplate template;
+    private final String url;
 
-    public StatClient(@Value("http://localhost:9090") String url,
+    public StatClient(@Value("${STAT_SERVER_URL}") String url,
                       RestTemplateBuilder template) {
+        this.url = url;
         this.template = template
-                .uriTemplateHandler(new DefaultUriBuilderFactory(url))
+                .uriTemplateHandler(new DefaultUriBuilderFactory(this.url))
                 .requestFactory(HttpComponentsClientHttpRequestFactory::new)
                 .build();
+    }
+
+    @PostConstruct
+    public void logUrl() {
+        log.info("Url to stats server: {}", url);
     }
 
     public void addHit(HttpServletRequest request) {
@@ -44,7 +54,7 @@ public class StatClient {
 
     public ResponseEntity<List<ViewStatsDto>> getStat(String start,
                                                       String end,
-                                                      String[] uris,
+                                                      List<String> uris,
                                                       boolean unique) {
         return template.exchange("/stats?start={start}&end={end}&uris={uris}&unique={unique}",
                 HttpMethod.GET,
