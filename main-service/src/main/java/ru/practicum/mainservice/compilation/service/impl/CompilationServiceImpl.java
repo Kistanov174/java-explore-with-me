@@ -109,6 +109,6 @@ public class CompilationServiceImpl implements CompilationService {
 
     private Compilation getCompilation(Long compId) {
         return compilationRepository.findById(compId)
-                .orElseThrow(() -> new DataNotFoundException("Compilation with id=" + compId + " was not found"));
+                .orElseThrow(() -> new DataNotFoundException(String.format("Compilation with id = %d was not found", compId)));
     }
 }

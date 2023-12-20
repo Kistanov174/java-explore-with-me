@@ -55,14 +55,12 @@ public class CommentServiceImpl implements CommentService {
         findUserById(userId);
         Comment comment = findCommentById(commentId);
 
-        if (!comment.getUser().getId().equals(userId)) {
-            throw new ConflictException("User id=" + userId + " not owner of Comment id=" + commentId);
+        if (!getUserIdFromComment(comment).equals(userId)) {
+            throw new ConflictException(String.format("User id = %d not owner of Comment id = %d", userId, commentId));
         }
 
         Optional.ofNullable(updateRequest.getText()).ifPresent(comment::setText);
-
         return commentMapper.mapToCommentDtoFromComment(comment);
-
     }
 
     @Transactional
@@ -72,35 +70,43 @@ public class CommentServiceImpl implements CommentService {
         return commentMapper.mapToCommentDtoFromComment(comment);
     }
 
-    @Transactional
     public void deleteByUser(long userId, long commentId) {
         findUserById(userId);
         Comment comment = findCommentById(commentId);
 
-        if (!comment.getUser().getId().equals(userId)) {
-            throw new ConflictException("User id=" + userId + " not owner of Comment id=" + commentId);
+        if (!getUserIdFromComment(comment).equals(userId)) {
+            throw new ConflictException(String.format("User id = %d not owner of Comment id = %d", userId, commentId));
         }
 
         commentRepository.deleteById(commentId);
     }
 
-    @Transactional
     public void deleteByAdmin(long commentId) {
         commentRepository.deleteById(commentId);
     }
 
+    private Long getUserIdFromComment(Comment comment) {
+        Long id;
+        try {
+            id = comment.getUser().getId();
+        } catch (NullPointerException e) {
+            id = 0L;
+        }
+        return id;
+    }
+
     private Comment findCommentById(long id) {
         return commentRepository.findById(id)
-                .orElseThrow(() -> new DataNotFoundException("Comment with id=" + id + " was not found"));
+                .orElseThrow(() -> new DataNotFoundException(String.format("Comment with id = %d was not found", id)));
     }
 
     private User findUserById(long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new DataNotFoundException("User with id=" + id + " was not found"));
+                .orElseThrow(() -> new DataNotFoundException(String.format("User with id = %d was not found", id)));
     }
 
     private Event findEventById(long id) {
         return eventRepository.findById(id)
-                .orElseThrow(() -> new DataNotFoundException("Event with id=" + id + " was not found"));
+                .orElseThrow(() -> new DataNotFoundException(String.format("Event with id = %d was not found", id)));
     }
 }

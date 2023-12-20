@@ -24,7 +24,6 @@ import ru.practicum.mainservice.event.repository.EventRepository;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-
 public class RequestServiceImpl implements RequestService {
     private final RequestRepository requestRepository;
     private final UserRepository userRepository;
@@ -82,7 +81,9 @@ public class RequestServiceImpl implements RequestService {
     public RequestDto changeStatusToCancelled(Long userId, Long requestId) {
         Request request = getRequest(requestId);
         if (!request.getRequester().getId().equals(userId)) {
-            throw new ConflictException("Пользователь " + userId + " не является инициатором запроса на участие в событии");
+            throw new ConflictException(
+                    String.format("Пользователь с id = %d не является инициатором запроса на участие в событии", userId)
+            );
         }
         request.setStatus(RequestStatus.CANCELED);
         RequestDto requestDto = modelMapper.toDto(requestRepository.save(request));
@@ -92,16 +93,18 @@ public class RequestServiceImpl implements RequestService {
 
     private Request getRequest(Long id) {
         return requestRepository.findById(id)
-                .orElseThrow(() -> new DataNotFoundException("ParticipationRequest with id = " + id + " was not found"));
+                .orElseThrow(() -> new DataNotFoundException(
+                        String.format("ParticipationRequest with id = %d was not found", id))
+                );
     }
 
     private User getUser(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new DataNotFoundException("User with id = " + id + " was not found"));
+                .orElseThrow(() -> new DataNotFoundException(String.format("User with id = %d was not found", id)));
     }
 
     private Event getEvent(Long id) {
         return eventRepository.findById(id)
-                .orElseThrow(() -> new DataNotFoundException("Event with id = " + id + " was not found"));
+                .orElseThrow(() -> new DataNotFoundException(String.format("Event with id = %d was not found", id)));
     }
 }

@@ -23,7 +23,6 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
 
-
     @Transactional
     @Override
     public UserDto addUser(NewUserDto newUser) {
@@ -67,7 +66,7 @@ public class UserServiceImpl implements UserService {
 
     private User getUserById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new DataNotFoundException("User with id = " + id + " was not found"));
+                .orElseThrow(() -> new DataNotFoundException(String.format("User with id = %d was not found", id)));
     }
 
     private boolean checkIsUniqueEmail(String email) {

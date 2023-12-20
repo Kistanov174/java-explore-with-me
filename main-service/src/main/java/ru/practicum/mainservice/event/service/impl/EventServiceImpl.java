@@ -26,7 +26,10 @@ import ru.practicum.mainservice.event.service.EventService;
 import ru.practicum.mainservice.exception.ConflictException;
 import ru.practicum.mainservice.exception.DataNotFoundException;
 import ru.practicum.mainservice.exception.IncorrectConditionException;
-import ru.practicum.mainservice.request.dto.*;
+import ru.practicum.mainservice.request.dto.RequestDto;
+import ru.practicum.mainservice.request.dto.EventRequestStatusUpdateRequest;
+import ru.practicum.mainservice.request.dto.ViewCountEventRequest;
+import ru.practicum.mainservice.request.dto.EventRequestStatusUpdateResult;
 import ru.practicum.mainservice.request.mapper.RequestMapper;
 import ru.practicum.mainservice.request.model.Request;
 import ru.practicum.mainservice.request.model.RequestStatus;
@@ -39,7 +42,12 @@ import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Objects;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -55,6 +63,12 @@ public class EventServiceImpl implements EventService {
     private final StatClient statsClient;
     public DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final Comparator<Event> eventComparator = Comparator.comparing(Event::getPublishedOn);
+    private static final int MIN_SIZE_EVENT_LIST = 1;
+    private static final long DEFAULT_COUNT_VIEWS = 1L;
+    private static final int DEFAULT_COUNT_CONFIRMED_REQUESTS = 0;
+    private static final LocalDateTime MAX_DATE_IN_FUTURE =
+            LocalDateTime.of(2030, 12, 31, 0, 0, 0);
+    private static final int PLACE_EVENT_NUMBER_IN_ADDRESS = "/events/".length();
 
     @Transactional
     @Override
@@ -258,14 +272,14 @@ public class EventServiceImpl implements EventService {
                                          LocalDateTime rangeEnd) {
         QEvent qEvent = QEvent.event;
         BooleanBuilder conditions = new BooleanBuilder();
-        if (categories != null && categories.size() > 0) {
+        if (categories != null && !categories.isEmpty()) {
             conditions.and(QEvent.event.category.id.in(categories));
         }
         conditions.and(qEvent.eventDate.after(Objects.requireNonNullElseGet(rangeStart, LocalDateTime::now)));
         if (rangeEnd != null) {
             conditions.and(qEvent.eventDate.before(rangeEnd));
         } else {
-            rangeEnd = LocalDateTime.of(2030, 12, 31, 0, 0, 0);
+            rangeEnd = MAX_DATE_IN_FUTURE;
             conditions.and(qEvent.eventDate.before(rangeEnd));
         }
         return conditions;
@@ -275,7 +289,7 @@ public class EventServiceImpl implements EventService {
                                                    List<Long> categories, LocalDateTime rangeStart,
                                                    LocalDateTime rangeEnd) {
         BooleanBuilder conditions = getConditions(categories, rangeStart, rangeEnd);
-        if (users != null && users.size() > 0) {
+        if (users != null && !users.isEmpty()) {
             conditions.and(QEvent.event.initiator.id.in(users));
         }
         if (states != null) {
@@ -357,7 +371,7 @@ public class EventServiceImpl implements EventService {
 
     private List<Event> getEventWithStat(List<Event> events) {
         Map<Long, Long> eventViews = new HashMap<>();
-        if (events.size() > 1) {
+        if (events.size() > MIN_SIZE_EVENT_LIST) {
            events.sort(eventComparator);
         }
         LocalDateTime earliestDate = events.get(0).getPublishedOn();
@@ -370,12 +384,12 @@ public class EventServiceImpl implements EventService {
 
         assert stat != null;
         for (ViewStatsDto line : stat) {
-            Long id = Long.parseLong(line.getUri().substring(8));
+            Long id = Long.parseLong(line.getUri().substring(PLACE_EVENT_NUMBER_IN_ADDRESS));
             eventViews.put(id, line.getHits());
         }
 
         for (Event event : events) {
-            event.setViews(eventViews.getOrDefault(event.getId(), 1L));
+            event.setViews(eventViews.getOrDefault(event.getId(), DEFAULT_COUNT_VIEWS));
         }
         return events;
     }
@@ -398,23 +412,24 @@ public class EventServiceImpl implements EventService {
                 );
 
         for (Event event : events) {
-            event.setConfirmedRequests(countedEventRequests.getOrDefault(event.getId(), 0));
+            event.setConfirmedRequests(countedEventRequests
+                    .getOrDefault(event.getId(), DEFAULT_COUNT_CONFIRMED_REQUESTS));
         }
         return events;
     }
 
     private Event getEvent(Long id) {
         return eventRepository.findById(id)
-                .orElseThrow(() -> new DataNotFoundException("Event with id=" + id + " was not found"));
+                .orElseThrow(() -> new DataNotFoundException(String.format("Event with id = %d was not found", id)));
     }
 
     private User getUser(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new DataNotFoundException("User with id=" + id + " was not found"));
+                .orElseThrow(() -> new DataNotFoundException(String.format("User with id = %d was not found", id)));
     }
 
     private Category getCategory(Long catId) {
         return categoryRepository.findById(catId)
-                .orElseThrow(() -> new DataNotFoundException("Category with id=" + catId + " was not found"));
+                .orElseThrow(() -> new DataNotFoundException(String.format("Category with id = %d was not found", catId)));
     }
 }
