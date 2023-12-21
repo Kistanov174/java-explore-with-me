@@ -11,8 +11,9 @@ import java.util.List;
 public interface StatisticRepository extends JpaRepository<EndpointHit, Long> {
 @Query("SELECT h.app AS app, h.uri AS uri, COUNT(DISTINCT h.ip) AS hits " +
         "FROM EndpointHit h " +
-        "GROUP BY h.app, h.uri " +
-        "ORDER BY hits DESC")
+        "WHERE h.created BETWEEN :start AND :end " +
+        "AND ((:uris) IS NULL OR h.uri IN :uris) " +
+        "GROUP BY h.app, h.uri")
 
 List<ViewStats> findUniqueStatData(@Param("start") LocalDateTime start,
                                    @Param("end") LocalDateTime end,

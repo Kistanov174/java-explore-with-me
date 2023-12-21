@@ -89,7 +89,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     private Category getCategory(Long catId) {
         return categoryRepository.findById(catId)
-                .orElseThrow(() -> new DataNotFoundException("Category with id=" + catId + " was not found"));
+                .orElseThrow(() -> new DataNotFoundException(String.format("Category with id = %d was not found", catId)));
     }
 
     private boolean checkIsUniqueName(String name) {

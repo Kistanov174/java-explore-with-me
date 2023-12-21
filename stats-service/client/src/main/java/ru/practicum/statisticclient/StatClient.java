@@ -56,6 +56,7 @@ public class StatClient {
                                                       String end,
                                                       List<String> uris,
                                                       boolean unique) {
+        String urisAsString = String.join(",", uris);
         return template.exchange("/stats?start={start}&end={end}&uris={uris}&unique={unique}",
                 HttpMethod.GET,
                 getHttpEntity(),
